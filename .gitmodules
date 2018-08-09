@@ -1,3 +1,0 @@
-[submodule "phpMQTT"]
-	path = phpMQTT
-	url = git@github.com:jeroenst/phpMQTT.git
