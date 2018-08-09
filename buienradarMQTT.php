@@ -1,7 +1,8 @@
+#!/usr/bin/php
 <?php
 
 
-require(realpath(dirname(__FILE__))."/../phpMQTT/phpMQTT.php");
+require(realpath(dirname(__FILE__))."/phpMQTT/phpMQTT.php");
 
 $server = "192.168.2.1";     // change if necessary
 $port = 1883;                     // change if necessary
@@ -11,10 +12,10 @@ $client_id = uniqid("buienradar_");; // make sure this is unique for connecting 
 echo ("Smartmeter MQTT publisher started...\n");
 $mqttTopicPrefix = "home/buienradar";
 $iniarray = parse_ini_file("buienradarMQTT.ini",true);
-if (($tmp = $iniarray["buienradar"]["mqttserver"]) != "") $server = $tmp;
-if (($tmp = $iniarray["buienradar"]["mqttport"]) != "") $tcpport = $tmp;
-if (($tmp = $iniarray["buienradar"]["mqttusername"]) != "") $username = $tmp;
-if (($tmp = $iniarray["buienradar"]["mqttpassword"]) != "") $password = $tmp;
+if (($tmp = $iniarray["buienradarMQTT"]["mqttserver"]) != "") $server = $tmp;
+if (($tmp = $iniarray["buienradarMQTT"]["mqttport"]) != "") $tcpport = $tmp;
+if (($tmp = $iniarray["buienradarMQTT"]["mqttusername"]) != "") $username = $tmp;
+if (($tmp = $iniarray["buienradarMQTT"]["mqttpassword"]) != "") $password = $tmp;
 
 
 $mqtt = new phpMQTT($server, $port, $client_id);
@@ -38,7 +39,7 @@ while (1)
                         }
         }
         
-        if ($timeouttimer == 60) $timeouttimer = 0;
+        if ($timeouttimer == 600) $timeouttimer = 0;
         else $timeouttimer++;
         
         $mqtt->proc();
@@ -46,7 +47,7 @@ while (1)
 
 }        
         
- function simplexml_to_array ($xml, &$array, $origpath)
+ function simplexml_to_array ($xml, &$array, $origpath, $next = 0)
  {
 
         // Empty node : <node></node>
@@ -56,7 +57,8 @@ while (1)
 
         // Nodes with children
         foreach ($xml->children() as $child) {
-        $path = $origpath."/".$child->getName();
+        if ($next) $path = $origpath."/".$child->getName();
+        else $path = $origpath;
         if ($child->getName() == "weerstation") $path.="/".$child->attributes()["id"];
                 $nrofsamechilds = 0;
                 foreach ($xml->children() as $searchchild)
@@ -65,11 +67,11 @@ while (1)
                 }
                 if ($nrofsamechilds > 1)
                 {
-                        simplexml_to_array($child, $array[$xml->getName()][], $path);
+                        simplexml_to_array($child, $array[$xml->getName()][], $path,1);
                 }
                 else
                 {
-                        simplexml_to_array($child, $array[$xml->getName()], $path);
+                        simplexml_to_array($child, $array[$xml->getName()], $path,1);
                 }
         }
         
